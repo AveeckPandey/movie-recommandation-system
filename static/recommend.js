@@ -1,4 +1,6 @@
 $(function() {
+  const my_api_key = window.tmdbApiKey || 'YOUR_API_KEY';
+
   // Button will be disabled until we type anything inside the input field
   const source = document.getElementById('autoComplete');
   const inputHandler = function(e) {
@@ -12,11 +14,13 @@ $(function() {
   source.addEventListener('input', inputHandler);
 
   $('.movie-button').on('click',function(){
-    var my_api_key = 'YOUR_API_KEY';
     var title = $('.movie').val();
     if (title=="") {
       $('.results').css('display','none');
       $('.fail').css('display','block');
+    }
+    else if (my_api_key=="YOUR_API_KEY") {
+      alert('Please configure your TMDB API key before searching.');
     }
     else{
       load_details(my_api_key,title);
@@ -26,7 +30,7 @@ $(function() {
 
 // will be invoked when clicking on the recommended movies
 function recommendcard(e){
-  var my_api_key = 'YOUR_API_KEY';
+  var my_api_key = window.tmdbApiKey || 'YOUR_API_KEY';
   var title = e.getAttribute('title'); 
   load_details(my_api_key,title);
 }
@@ -35,7 +39,7 @@ function recommendcard(e){
 function load_details(my_api_key,title){
   $.ajax({
     type: 'GET',
-    url:'https://api.themoviedb.org/3/search/movie?api_key='+my_api_key+'&query='+title,
+    url:'https://api.themoviedb.org/3/search/movie?api_key='+my_api_key+'&query='+encodeURIComponent(title),
 
     success: function(movie){
       if(movie.results.length<1){
@@ -231,7 +235,7 @@ function get_movie_posters(arr,my_api_key){
   for(var m in arr) {
     $.ajax({
       type:'GET',
-      url:'https://api.themoviedb.org/3/search/movie?api_key='+my_api_key+'&query='+arr[m],
+      url:'https://api.themoviedb.org/3/search/movie?api_key='+my_api_key+'&query='+encodeURIComponent(arr[m]),
       async: false,
       success: function(m_data){
         arr_poster_list.push('https://image.tmdb.org/t/p/original'+m_data.results[0].poster_path);
