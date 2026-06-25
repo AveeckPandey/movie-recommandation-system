@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>NEW</title>
+	<title>{{title}} | Movie Recommendation System</title>
 
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -31,10 +31,10 @@
 <div id="mycontent">
     <div id="mcontent">
       <div class="poster-lg">
-        <img class="poster" style="border-radius: 40px;margin-left: 90px;" height="400" width="250" src={{poster}}>
+        <img class="poster" style="border-radius: 40px;margin-left: 90px;" height="400" width="250" src="{{poster}}" alt="{{title}} poster">
       </div>
       <div class="poster-sm text-center">
-        <img class="poster" style="border-radius: 40px;margin-bottom: 5%;" height="400" width="250" src={{poster}}>
+        <img class="poster" style="border-radius: 40px;margin-bottom: 5%;" height="400" width="250" src="{{poster}}" alt="{{title}} poster">
       </div>
       <div id="details">
         <br/>
@@ -154,7 +154,7 @@
       {% for poster, title in movie_cards.items() if not movie_cards.hidden %}
         <div class="card" style="width: 15rem;" title="{{title}}" onclick="recommendcard(this)">
           <div class="imghvr">
-            <img class="card-img-top" height="360" width="240" alt="{{title}} - poster" src={{poster}}>
+            <img class="card-img-top" height="360" width="240" alt="{{title}} - poster" src="{{poster}}">
             <figcaption class="fig">
               <button class="card-btn btn btn-danger"> Click Me </button>
             </figcaption>
