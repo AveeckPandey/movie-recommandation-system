@@ -93,10 +93,10 @@ pip install -r requirements.txt
 
 Create a TMDB account at [themoviedb.org](https://www.themoviedb.org/) and generate an API key from your account settings.
 
-Then open `static/recommend.js` and replace `YOUR_API_KEY` with your TMDB API key in both places where it appears.
+Copy `.env.example` to `.env`, then replace the placeholder value with your TMDB API key.
 
-```javascript
-var my_api_key = 'YOUR_API_KEY';
+```text
+TMDB_API_KEY=your_tmdb_api_key_here
 ```
 
 ### 5. Run the Application
