@@ -147,6 +147,14 @@ The recommendation dataset is built from movie metadata collected from public mo
 - IMDb page structure may change over time, which can affect review scraping.
 - The app uses local `.pkl` model files, so keep them in the project root when running the app.
 
+## Additional Documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Local Setup](docs/SETUP.md)
+- [TMDB API Key](docs/API_KEY.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Deployment](docs/DEPLOYMENT.md)
+
 ## License
 
 This project is intended for learning and educational use.
