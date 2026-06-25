@@ -1,34 +1,33 @@
-from email.mime import application
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import json
 from bs4 import BeautifulSoup
 import pickle
 import requests
+from config import DATA_PATH, FLASK_DEBUG, NLP_MODEL_PATH, TMDB_API_KEY, VECTORIZER_PATH
 
 # load the nlp model and tfidf vectorizer from disk
-filename = 'nlp_model.pkl'
-clf = pickle.load(open(filename, 'rb'))
-vectorizer = pickle.load(open('tranform.pkl','rb'))
+clf = pickle.load(open(NLP_MODEL_PATH, 'rb'))
+vectorizer = pickle.load(open(VECTORIZER_PATH, 'rb'))
+
+data = None
+similarity = None
 
 def create_similarity():
-    data = pd.read_csv('main_data.csv')
+    movie_data = pd.read_csv(DATA_PATH)
     # creating a count matrix
     cv = CountVectorizer()
-    count_matrix = cv.fit_transform(data['comb'])
+    count_matrix = cv.fit_transform(movie_data['comb'])
     # creating a similarity score matrix
-    similarity = cosine_similarity(count_matrix)
-    return data,similarity
+    similarity_scores = cosine_similarity(count_matrix)
+    return movie_data,similarity_scores
 
 def rcmd(m):
+    global data, similarity
     m = m.lower()
-    try:
-        data.head()
-        similarity.shape
-    except:
+    if data is None or similarity is None:
         data, similarity = create_similarity()
     if m not in data['movie_title'].unique():
         return('Sorry! The movie you requested is not in our database. Please check the spelling or try with some other movies')
@@ -51,8 +50,8 @@ def convert_to_list(my_list):
     return my_list
 
 def get_suggestions():
-    data = pd.read_csv('main_data.csv')
-    return list(data['movie_title'].str.capitalize())
+    movie_data = pd.read_csv(DATA_PATH)
+    return list(movie_data['movie_title'].str.capitalize())
 
 app = Flask(__name__)
 
@@ -60,7 +59,7 @@ app = Flask(__name__)
 @app.route("/home")
 def home():
     suggestions = get_suggestions()
-    return render_template('home.html',suggestions=suggestions)
+    return render_template('home.html',suggestions=suggestions,tmdb_api_key=TMDB_API_KEY)
 
 @app.route("/similarity",methods=["POST"])
 def similarity():
@@ -123,17 +122,15 @@ def recommend():
     casts = {cast_names[i]:[cast_ids[i], cast_chars[i], cast_profiles[i]] for i in range(len(cast_profiles))}
 
     cast_details = {cast_names[i]:[cast_ids[i], cast_profiles[i], cast_bdays[i], cast_places[i], cast_bios[i]] for i in range(len(cast_places))}
-    print(f"calling imdb api: {'https://www.imdb.com/title/{}/reviews/?ref_=tt_ov_rt'.format(imdb_id)}")
     # web scraping to get user reviews from IMDB site
     url = f'https://www.imdb.com/title/{imdb_id}/reviews/?ref_=tt_ov_rt'
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'}
 
     response = requests.get(url, headers=headers)
-    print(response.status_code)
+    movie_reviews = {}
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'lxml')
         soup_result = soup.find_all("div", {"class": "ipc-html-content-inner-div"})
-        print(soup_result)
 
         reviews_list = [] # list of reviews
         reviews_status = [] # list of comments (good or bad)
@@ -149,12 +146,10 @@ def recommend():
         # combining reviews and comments into a dictionary
         movie_reviews = {reviews_list[i]: reviews_status[i] for i in range(len(reviews_list))}     
 
-        # passing all the data to the html file
-        return render_template('recommend.html',title=title,poster=poster,overview=overview,vote_average=vote_average,
-            vote_count=vote_count,release_date=release_date,runtime=runtime,status=status,genres=genres,
-            movie_cards=movie_cards,reviews=movie_reviews,casts=casts,cast_details=cast_details)
-    else:
-        print("Failed to retrieve reviews")
+    # passing all the data to the html file
+    return render_template('recommend.html',title=title,poster=poster,overview=overview,vote_average=vote_average,
+        vote_count=vote_count,release_date=release_date,runtime=runtime,status=status,genres=genres,
+        movie_cards=movie_cards,reviews=movie_reviews,casts=casts,cast_details=cast_details)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=FLASK_DEBUG)
